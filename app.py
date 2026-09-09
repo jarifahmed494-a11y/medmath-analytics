@@ -7,11 +7,10 @@ from skimage.data import shepp_logan_phantom
 # Page Configuration
 st.set_page_config(page_title="MedMath Analytics", layout="wide")
 
-# Custom Styling (Adrien Clean Format)
+# Custom Styling
 st.markdown("""
     <style>
-    .main { background-color: #FFFFFF; }
-    h1, h2, h3 { color: #1E293B; }
+    h1, h2, h3 { color: #38BDF8; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -41,9 +40,20 @@ with tab1:
         image = shepp_logan_phantom()
         theta = np.linspace(0.0, 180.0, num_angles, endpoint=False)
         sinogram = radon(image, theta=theta)
-        reconstructed = iradon(sinogram, theta=theta, filter_type='ramp')
+        
+        # Fixed iradon call for compatibility
+        reconstructed = iradon(sinogram, theta=theta, filter_name='ramp')
 
         fig, ax = plt.subplots(1, 3, figsize=(12, 4))
+        fig.patch.set_facecolor('#0E1117')
+        
+        for a in ax:
+            a.set_facecolor('#0E1117')
+            a.title.set_color('white')
+            a.xaxis.label.set_color('white')
+            a.yaxis.label.set_color('white')
+            a.tick_params(colors='white')
+
         ax[0].imshow(image, cmap='gray')
         ax[0].set_title("Original Brain Slice")
         ax[0].axis('off')
@@ -74,7 +84,6 @@ with tab2:
         st.info("💡 **Key Math:** Center of $k$-space stores contrast/brightness; outer region stores edge sharp details.")
 
     with col2:
-        # Base image setup
         img_mri = shepp_logan_phantom()
         f_transform = np.fft.fftshift(np.fft.fft2(img_mri))
         rows, cols = img_mri.shape
@@ -97,6 +106,13 @@ with tab2:
         img_back = np.abs(np.fft.ifft2(np.fft.ifftshift(f_transform_filtered)))
 
         fig2, ax2 = plt.subplots(1, 2, figsize=(10, 4))
+        fig2.patch.set_facecolor('#0E1117')
+        
+        for a in ax2:
+            a.set_facecolor('#0E1117')
+            a.title.set_color('white')
+            a.tick_params(colors='white')
+
         ax2[0].imshow(k_space_visual, cmap='gray')
         ax2[0].set_title("Filtered k-Space Matrix")
         ax2[0].axis('off')
@@ -122,7 +138,6 @@ with tab3:
         st.latex(r"d = \frac{v \cdot t}{2}")
         st.latex(r"R = \left(\frac{Z_2 - Z_1}{Z_2 + Z_1}\right)^2")
 
-        # Densities Z (Rayls)
         z_dict = {"Fat": 1.38, "Muscle": 1.70, "Bone": 6.00}
         t1, t2 = tissue_choice.split(" to ")
         z1, z2 = z_dict[t1], z_dict[t2]
@@ -131,21 +146,26 @@ with tab3:
 
     with col2:
         t_time = np.linspace(0, 10, 500)
-        sound_speed = 1540 # m/s in soft tissue
         
-        # Waveform generation
         incident_wave = np.sin(2 * np.pi * frequency * t_time) * np.exp(-0.5 * (t_time - 2)**2)
         echo_wave = r_coeff * np.sin(2 * np.pi * frequency * t_time) * np.exp(-0.5 * (t_time - 7)**2)
         combined_signal = incident_wave + echo_wave
 
         fig3, ax3 = plt.subplots(figsize=(8, 3.5))
-        ax3.plot(t_time, combined_signal, color='#2563EB', lw=1.5)
-        ax3.axvline(x=2, color='green', linestyle='--', label='Transmitter Signal')
-        ax3.axvline(x=7, color='red', linestyle='--', label='Boundary Echo Pulse')
+        fig3.patch.set_facecolor('#0E1117')
+        ax3.set_facecolor('#0E1117')
+        ax3.title.set_color('white')
+        ax3.xaxis.label.set_color('white')
+        ax3.yaxis.label.set_color('white')
+        ax3.tick_params(colors='white')
+
+        ax3.plot(t_time, combined_signal, color='#38BDF8', lw=1.5)
+        ax3.axvline(x=2, color='#4ADE80', linestyle='--', label='Transmitter Signal')
+        ax3.axvline(x=7, color='#F87171', linestyle='--', label='Boundary Echo Pulse')
         ax3.set_title("A-Scan Pulse Echo Trace")
         ax3.set_xlabel("Time Delay (microseconds)")
         ax3.set_ylabel("Amplitude")
-        ax3.legend()
-        ax3.grid(True, alpha=0.3)
+        ax3.legend(facecolor='#0E1117', labelcolor='white')
+        ax3.grid(True, alpha=0.2)
 
         st.pyplot(fig3)
